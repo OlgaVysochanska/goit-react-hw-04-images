@@ -1,99 +1,81 @@
-import { Component } from 'react';
+import { useState, useEffect } from 'react';
 import { Audio } from 'react-loader-spinner';
 
 import { searchPosts } from 'services/API';
-
 import { Searchbar } from 'components/Searchbar/Searchbar';
 import { ImageGallery } from 'components/ImageGallery/ImageGallery';
 import { Modal } from 'components/Modal/Modal';
 import { Button } from 'components/Button/Button';
 
-export class App extends Component {
-  state = {
-    keyWord: '',
-    images: [],
-    page: 1,
-    error: null,
-    loading: false,
-    showModal: false,
-    largeImageURL: '',
-  };
+export const App = () => {
+  const [keyWord, setKeyWord] = useState('');
+  const [images, setImages] = useState([]);
+  const [page, setPage] = useState(1);
+  const [error, setError] = useState(null);
+  const [loading, setLoading] = useState(false);
+  const [showModal, setShowModal] = useState(false);
+  const [largeImgURL, setLargeImgURL] = useState('');
 
-  componentDidUpdate(prevProps, prevState) {
-    const { keyWord, page } = this.state;
-    if (prevState.keyWord !== keyWord || prevState.page !== page) {
-      this.fetchPosts();
+  useEffect(() => {
+    if (keyWord === '') {
+      return;
     }
-  }
+    setLoading(true);
+    searchPosts(keyWord, page)
+      .then(data => {
+        setImages(prevState => [...prevState, ...data.hits]);
+      })
+      .catch(error => setError(error.message))
+      .finally(setLoading(false));
+  }, [keyWord, page]);
 
-  async fetchPosts() {
-    try {
-      this.setState({ loading: true });
-      const { keyWord, page } = this.state;
-      const data = await searchPosts(keyWord, page);
-      this.setState(({ images }) => ({
-        images: [...images, ...data.hits],
-      }));
-    } catch (error) {
-      this.setState({ error: error.message });
-    } finally {
-      this.setState({ loading: false });
-    }
-  }
-
-  onSubmitForm = data => {
-    this.setState({ keyWord: data, images: [], page: 1 });
+  const onSubmitForm = data => {
+    setKeyWord(data);
+    setImages([]);
+    setPage(1);
   };
 
-  onImageClick = data => {
-    this.setState({
-      largeImageURL: data,
-      showModal: true,
-    });
+  const onImageClick = data => {
+    setLargeImgURL(data);
+    setShowModal(true);
   };
 
-  closeModal = () => {
-    this.setState({
-      showModal: false,
-      largeImageURL: '',
-    });
+  const closeModal = () => {
+    setShowModal(false);
+    setLargeImgURL('');
   };
 
-  loadMore = () => {
-    this.setState(({ page }) => ({ page: page + 1 }));
+  const loadMore = () => {
+    setPage(prevState => prevState + 1);
   };
 
-  render() {
-    const { loading, images, largeImageURL, showModal } = this.state;
-    const { onSubmitForm, onImageClick, closeModal, loadMore } = this;
-    return (
-      <>
-        <Searchbar onSubmit={onSubmitForm} />
+  return (
+    <>
+      <Searchbar onSubmit={onSubmitForm} />
 
-        {images.length > 0 && (
-          <ImageGallery images={images} onImageClick={onImageClick} />
-        )}
+      {images.length > 0 && (
+        <ImageGallery images={images} onImageClick={onImageClick} />
+      )}
 
-        {images.length > 0 && !loading && <Button loadMore={loadMore} />}
+      {images.length > 0 && !loading && <Button loadMore={loadMore} />}
 
-        {loading && (
-          <Audio
-            height="80"
-            width="80"
-            radius="9"
-            color="green"
-            ariaLabel="loading"
-            wrapperStyle=""
-            wrapperClass=""
-          />
-        )}
+      {loading && (
+        <Audio
+          height="80"
+          width="80"
+          radius="9"
+          color="green"
+          ariaLabel="loading"
+          wrapperStyle=""
+          wrapperClass=""
+        />
+      )}
 
-        {showModal && (
-          <Modal close={closeModal}>
-            <img src={largeImageURL} alt="" />
-          </Modal>
-        )}
-      </>
-    );
-  }
-}
+      {showModal && (
+        <Modal close={closeModal}>
+          <img src={largeImgURL} alt="" />
+        </Modal>
+      )}
+    </>
+  );
+};
