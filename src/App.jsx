@@ -11,7 +11,6 @@ export const App = () => {
   const [keyWord, setKeyWord] = useState('');
   const [images, setImages] = useState([]);
   const [page, setPage] = useState(1);
-  // const [error, setError] = useState(null);
   const [loading, setLoading] = useState(false);
   const [showModal, setShowModal] = useState(false);
   const [largeImgURL, setLargeImgURL] = useState('');
