@@ -11,7 +11,7 @@ export const App = () => {
   const [keyWord, setKeyWord] = useState('');
   const [images, setImages] = useState([]);
   const [page, setPage] = useState(1);
-  const [error, setError] = useState(null);
+  // const [error, setError] = useState(null);
   const [loading, setLoading] = useState(false);
   const [showModal, setShowModal] = useState(false);
   const [largeImgURL, setLargeImgURL] = useState('');
@@ -25,7 +25,7 @@ export const App = () => {
       .then(data => {
         setImages(prevState => [...prevState, ...data.hits]);
       })
-      .catch(error => setError(error.message))
+      .catch(error => console.log(error.message))
       .finally(setLoading(false));
   }, [keyWord, page]);
 
