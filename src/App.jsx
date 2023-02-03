@@ -1,7 +1,7 @@
 import { useState, useEffect } from 'react';
 import { Audio } from 'react-loader-spinner';
 
-import { searchPosts } from 'services/API';
+import { searchImages } from 'services/API';
 import { Searchbar } from 'components/Searchbar/Searchbar';
 import { ImageGallery } from 'components/ImageGallery/ImageGallery';
 import { Modal } from 'components/Modal/Modal';
@@ -16,16 +16,21 @@ export const App = () => {
   const [largeImgURL, setLargeImgURL] = useState('');
 
   useEffect(() => {
-    if (keyWord === '') {
+    if (!keyWord) {
       return;
     }
-    setLoading(true);
-    searchPosts(keyWord, page)
-      .then(data => {
+    const fetchImages = async () => {
+      try {
+        setLoading(true);
+        const data = await searchImages(keyWord, page);
         setImages(prevState => [...prevState, ...data.hits]);
-      })
-      .catch(error => console.log(error.message))
-      .finally(setLoading(false));
+      } catch (error) {
+        console.log(error.message);
+      } finally {
+        setLoading(false);
+      }
+    };
+    fetchImages();
   }, [keyWord, page]);
 
   const onSubmitForm = data => {
